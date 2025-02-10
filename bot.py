@@ -1,33 +1,48 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from telegram import Update
 from telegram.ext import Application, MessageHandler, filters, ContextTypes
 import asyncio
 from dotenv import load_dotenv
+from countuser import ChannelUpdater
 import os
 
 load_dotenv()
-
-DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-DISCORD_CHANNEL_ID = 1338223752336375858
-TELEGRAM_CHANNEL_ID = -1002276045151
 
 intents = discord.Intents.default()
 intents.messages = True
 intents.guilds = True
 intents.message_content = True
+intents.members = True
+intents.presences = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+DISCORD_CHANNEL_ID = 1338223752336375858
+TELEGRAM_CHANNEL_ID = -1002276045151
+CHANNEL_ID = 1338458279541477418
+channel_updater = ChannelUpdater(bot, CHANNEL_ID)
+
+#запуск бота и автоматических функций
 @bot.event
 async def on_ready():
     print(f"Бот {bot.user} успешно запущен!")
+    channel_updater.start()
 
+#ping
 @bot.command()
 async def ping(ctx):
     await ctx.send('Pong!')
 
+#функция для автоматического апдейта канала с кол-вом участников    
+@bot.command()
+async def update(ctx):
+    await channel_updater.update_channel_name()
+    await ctx.send("Название канала обновлено!")    
+
+#отправляет сообщение из тг в дс
 async def send_to_discord(message):
     channel = bot.get_channel(DISCORD_CHANNEL_ID)
     if channel:
