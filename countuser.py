@@ -6,23 +6,20 @@ class ChannelUpdater:
         self.bot = bot
         self.channel_id = channel_id
 
-    @tasks.loop(minutes=60)  # Обновлять название канала каждые 5 минут
+    @tasks.loop(minutes=60)
     async def update_channel_name(self):
-        guild = discord.utils.get(self.bot.guilds)  # Получаем первый сервер
+        guild = discord.utils.get(self.bot.guilds)
         if guild:
-            # Подсчитываем участников
             total_members = guild.member_count
             online_members = sum(1 for m in guild.members if m.status == discord.Status.online)
             offline_members = total_members - online_members
 
-            # Формируем новое имя канала
             new_name = f"Участников: {total_members}"
 
-            # Найдите канал с заданным ID
             channel = discord.utils.get(guild.channels, id=self.channel_id)
-            if channel and isinstance(channel, discord.VoiceChannel):  # Убедитесь, что это голосовой канал
+            if channel and isinstance(channel, discord.VoiceChannel):
                 await channel.edit(name=new_name)
-                print(f"Название канала обновлено на: {new_name}")
+                # print(f"Название канала обновлено на: {new_name}")
 
     def start(self):
         self.update_channel_name.start()
