@@ -30,7 +30,7 @@ async def on_ready():
     channel_updater.start()
 
 async def run_webhook():
-    config = uvicorn.Config(app, host="0.0.0.0", port=8000)
+    config = uvicorn.Config(app, host="0.0.0.0", port=888)
     server = uvicorn.Server(config)
     await server.serve()
 
