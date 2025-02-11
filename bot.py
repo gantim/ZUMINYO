@@ -40,6 +40,18 @@ async def update(ctx):
     await channel_updater.update_channel_name()
     await ctx.send("Название канала обновлено!")    
 
+# создание вебхука
+@bot.command()
+async def create_webhook(ctx, webhook_name="zhume moments"):
+    if not ctx.author.guild_permissions.manage_webhooks:
+        return await ctx.send("❌ У тебя нет прав на управление вебхуками!")
+
+    webhook = await ctx.channel.create_webhook(name=webhook_name)
+    
+    await ctx.send(f"✅ Вебхук создан! URL: {webhook.url}")
+
+    print(f"✅ Вебхук создан: {webhook.url}")
+
 #запуск тг бота\дс бота
 async def main():
     telegram_task = asyncio.create_task(start_telegram_bot(bot))
