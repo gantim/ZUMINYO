@@ -1,12 +1,12 @@
 import discord
-from discord.ext import commands, tasks
-from telegram import Update
-from telegram.ext import Application, MessageHandler, filters, ContextTypes
+from discord.ext import commands
 import asyncio
-from dotenv import load_dotenv
 from countuser import ChannelUpdater
 from telegram_handler import start_telegram_bot
 import os
+from dotenv import load_dotenv
+import uvicorn
+from youtube_webhook import app  # Импорт FastAPI-приложения
 
 load_dotenv()
 
@@ -28,6 +28,11 @@ channel_updater = ChannelUpdater(bot, CHANNEL_ID)
 async def on_ready():
     print(f"Бот {bot.user} успешно запущен!")
     channel_updater.start()
+
+async def run_webhook():
+    config = uvicorn.Config(app, host="0.0.0.0", port=8000)
+    server = uvicorn.Server(config)
+    await server.serve()
 
 # Ping
 @bot.command()
@@ -56,8 +61,9 @@ async def create_webhook(ctx, webhook_name="zhume moments"):
 async def main():
     telegram_task = asyncio.create_task(start_telegram_bot(bot))
     discord_task = asyncio.create_task(bot.start(DISCORD_TOKEN))
+    webhook_task = asyncio.create_task(run_webhook())
 
-    await asyncio.gather(telegram_task, discord_task)
+    await asyncio.gather(telegram_task, discord_task, webhook_task)
 
 if __name__ == "__main__":
     asyncio.run(main())
