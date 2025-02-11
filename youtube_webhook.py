@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Query
 import httpx
 import xml.etree.ElementTree as ET
 import re, os
 from dotenv import load_dotenv
 from datetime import datetime, timezone, timedelta
+from starlette.responses import Response
 
 
 load_dotenv()
@@ -73,14 +74,17 @@ async def get_video_details(video_id):
 
 @app.get("/youtube")
 async def verify_hub(
-    hub_mode: str, 
-    hub_topic: str, 
-    hub_challenge: str, 
-    hub_lease_seconds: int = None
+    hub_mode: str = Query(None, alias="hub.mode"),
+    hub_topic: str = Query(None, alias="hub.topic"),
+    hub_challenge: str = Query(None, alias="hub.challenge"),
+    hub_lease_seconds: int = Query(None, alias="hub.lease_seconds")
 ):
     """ YouTube требует подтверждения вебхука """
-    print(f"✅ Запрос подтверждения от YouTube: {hub_challenge}")
-    return hub_challenge  # YouTube ждёт, что сервер просто вернёт challenge
+    if hub_mode == "subscribe" and hub_challenge:
+        print(f"✅ YouTube отправил challenge: {hub_challenge}")
+        return Response(content=hub_challenge, media_type="text/plain")  # Вернуть challenge в raw-формате
+    
+    return Response(content="❌ Ошибка: неверный запрос", status_code=400, media_type="text/plain")
 
 @app.post("/youtube")
 async def youtube_webhook(request: Request):
