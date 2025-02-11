@@ -72,8 +72,10 @@ async def get_video_details(video_id):
     return None, None, None, None, None
 
 @app.get("/youtube")
-async def verify_hub(challenge: str):
-    return challenge
+async def verify_hub(hub_mode: str, hub_topic: str, hub_challenge: str):
+    """ YouTube требует подтверждения вебхука """
+    print(f"✅ Запрос подтверждения от YouTube: {hub_challenge}")
+    return hub_challenge  # Отправляем challenge обратно
 
 @app.post("/youtube")
 async def youtube_webhook(request: Request):
