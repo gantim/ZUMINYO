@@ -6,7 +6,7 @@ from telegram_handler import start_telegram_bot
 import os
 from dotenv import load_dotenv
 import uvicorn
-from youtube_webhook import app  # Импорт FastAPI-приложения
+from youtube_webhook import app 
 
 load_dotenv()
 

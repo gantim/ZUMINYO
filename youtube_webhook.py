@@ -39,9 +39,10 @@ def format_duration(seconds):
 
 def format_publish_date(published_at):
     published_time = datetime.strptime(published_at, "%Y-%m-%dT%H:%M:%SZ")
-    published_time = published_time.replace(tzinfo=timezone.utc).astimezone()
+    moscow_tz = timezone(timedelta(hours=3))  # UTC+3
+    published_time = published_time.replace(tzinfo=timezone.utc).astimezone(moscow_tz)
 
-    now = datetime.now().astimezone()
+    now = datetime.now(timezone.utc).astimezone(moscow_tz)
     delta = now - published_time
 
     if delta.days == 0:
