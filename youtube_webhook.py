@@ -123,7 +123,7 @@ async def youtube_webhook(request: Request):
             "title": title,
             "url": video_url,
             "image": {"url": thumbnail_url},
-            "description": f"Длительность: {formatted_duration}\n{formatted_publish_date}",
+            "description": f"Длительность: {formatted_duration}", #Длительность: {formatted_duration}\n{formatted_publish_date}
             "color": 0xff0000  # Красный цвет (YouTube)
         }
 
