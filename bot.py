@@ -34,6 +34,7 @@ REACTION_ROLE_MAP = {
     1339936065150128310: "Fortnite"
 }
 
+
 # Запуск автоматических функций
 @bot.event
 async def on_ready():
