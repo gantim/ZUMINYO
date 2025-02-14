@@ -20,8 +20,8 @@ intents.presences = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
-CHANNEL_ID = 1338458279541477418
-channel_updater = ChannelUpdater(bot, CHANNEL_ID)
+CHANNEL_USER_ID = int(os.getenv("CHANNEL_USER_ID"))
+channel_updater = ChannelUpdater(bot, CHANNEL_USER_ID)
 
 # Запуск бота и автоматических функций
 @bot.event

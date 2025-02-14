@@ -11,7 +11,7 @@ load_dotenv()
 
 app = FastAPI()
 
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1338991514860257361/MEVHuHDMACFKZ7wb9qrq2Q5Hfbha8aLIrrxn3tOF90hR1tGihxQ05DBWuR_lMEQj--bB"
+DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 
 published_videos = set()
