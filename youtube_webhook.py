@@ -5,11 +5,12 @@ import re, os
 from dotenv import load_dotenv
 from datetime import datetime, timezone, timedelta
 from starlette.responses import Response
-
+from logger_switch import SwitchableLogger
 
 load_dotenv()
 
 app = FastAPI()
+logger = SwitchableLogger(None)
 
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
@@ -80,10 +81,9 @@ async def verify_hub(
     hub_challenge: str = Query(None, alias="hub.challenge"),
     hub_lease_seconds: int = Query(None, alias="hub.lease_seconds")
 ):
-    """ YouTube требует подтверждения вебхука """
     if hub_mode == "subscribe" and hub_challenge:
-        print(f"✅ YouTube отправил challenge: {hub_challenge}")
-        return Response(content=hub_challenge, media_type="text/plain")  # Вернуть challenge в raw-формате
+        await logger.log(f"YouTube отправил challenge: {hub_challenge}")
+        return Response(content=hub_challenge, media_type="text/plain")
     
     return Response(content="❌ Ошибка: неверный запрос", status_code=400, media_type="text/plain")
 
@@ -91,27 +91,28 @@ async def verify_hub(
 async def youtube_webhook(request: Request):
     try:
         data = await request.body()
+        await logger.log("Получен новый вебхук от YouTube")
         root = ET.fromstring(data)
 
         entry = root.find(".//{http://www.w3.org/2005/Atom}entry")
         if entry is None:
+            await logger.log(f"Ошибка обработки вебхука: {e}")
             return {"status": "error", "reason": "Entry not found"}
 
         video_id = entry.find("{http://www.w3.org/2005/Atom}id").text.split(":")[-1]
         video_url = f"https://www.youtube.com/watch?v={video_id}"
 
-        # Проверяем длительность видео
         duration, title, channel_name, thumbnail_url, published_at = await get_video_details(video_id)
         if duration is None:
-#            print(f"❌ Видео {video_id} не найдено через API!")
+            await logger.log(f"Видео {video_id} не найдено через API!")
             return {"status": "error", "reason": "Video not found"}
 
-        if duration <= 60:  # Исключаем шортсы
-#            print(f"❌ Пропущено: {video_url} (Shorts, {duration} сек)")
+        if duration <= 60:
+            await logger.log(f"Пропущено: {video_url} (Shorts, {duration} сек)")
             return {"status": "ignored"}
 
         if video_id in published_videos:
-#            print(f"❌ Пропущено: {video_url} (дубликат)")
+            await logger.log(f"Пропущено: {video_url} (дубликат)")
             return {"status": "ignored"}
 
         published_videos.add(video_id)
@@ -145,10 +146,11 @@ async def youtube_webhook(request: Request):
                 "embeds": [embed],
                 "components": [button]
             })
-#            print(f"✅ Видео опубликовано: {video_url} | Status: {response.status_code}")
+            await logger.log(f"Видео опубликовано: {video_url} | Status: {response.status_code}")
+
 
         return {"status": "ok"}
 
     except Exception as e:
-#        print(f"❌ Ошибка обработки вебхука: {e}")
+        await logger.log(f"Ошибка обработки вебхука: {e}")
         return {"status": "error", "reason": str(e)}

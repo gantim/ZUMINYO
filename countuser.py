@@ -1,10 +1,12 @@
 import discord
 from discord.ext import tasks
+from logger_switch import SwitchableLogger
 
 class ChannelUpdater:
-    def __init__(self, bot, channel_id):
+    def __init__(self, bot, channel_id, logger):
         self.bot = bot
         self.channel_id = channel_id
+        self.logger = logger
 
     @tasks.loop(minutes=60)
     async def update_channel_name(self):
@@ -19,10 +21,12 @@ class ChannelUpdater:
             channel = discord.utils.get(guild.channels, id=self.channel_id)
             if channel and isinstance(channel, discord.VoiceChannel):
                 await channel.edit(name=new_name)
-                # print(f"Название канала обновлено на: {new_name}")
+                await self.logger.log(f"Название канала обновлено на: {new_name}")
 
-    def start(self):
+    async def start(self):
         self.update_channel_name.start()
+        await self.logger.log("Обновление названия канала запущено")
 
-    def stop(self):
+    async def stop(self):
         self.update_channel_name.cancel()
+        await self.logger.log("Обновление названия канала остановлено")
