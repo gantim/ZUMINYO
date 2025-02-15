@@ -55,6 +55,14 @@ async def on_ready():
     else:
         await send_roles_message(guild)
 
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.MissingRole) or isinstance(error, commands.MissingPermissions):
+        await ctx.send("❌ У вас нет прав на выполнение этой команды.")
+        await logger.log(f"⚠ `{ctx.author.name}` попытался использовать команду `{ctx.command}`, но не имеет прав.")
+    else:
+        raise error
+
 # запуск портов для вебхука
 async def run_webhook():
     config = uvicorn.Config(app, host="0.0.0.0", port=8000)
@@ -64,12 +72,16 @@ async def run_webhook():
 
 # Ping
 @bot.command()
+@commands.has_role("Dev")
+@commands.has_permissions(administrator=True)
 async def ping(ctx):
     await ctx.send('Pong!')
     await logger.log(f"Команду `ping` использовал {ctx.author.name}")
 
 # ручное обновление количества участников в канале
 @bot.command()
+@commands.has_role("Dev")
+@commands.has_permissions(administrator=True)
 async def update(ctx):
     await logger.log(f"`{ctx.author.name}` обновил канал участников.")
     await channel_updater.update_channel_name()
@@ -77,6 +89,8 @@ async def update(ctx):
 
 # создание вебхука
 @bot.command()
+@commands.has_role("Dev")
+@commands.has_permissions(administrator=True)
 async def create_webhook(ctx, webhook_name="zhume moments"):
     if not ctx.author.guild_permissions.manage_webhooks:
         
@@ -91,12 +105,16 @@ async def create_webhook(ctx, webhook_name="zhume moments"):
 
 
 @bot.command()
+@commands.has_role("Dev")
+@commands.has_permissions(administrator=True)
 async def enable_logging(ctx):
     logger.enable()
     await logger.log(f"🟢 `{ctx.author.name}` включил логирование.")
     await ctx.send("Логирование включено!")
     
 @bot.command()
+@commands.has_role("Dev")
+@commands.has_permissions(administrator=True)
 async def disable_logging(ctx):
     logger.disable()
     await logger.log(f"🔴 `{ctx.author.name}` выключил логирование.")
@@ -114,6 +132,8 @@ async def load_message_id():
 
 # ручное создание выдачи ролей
 @bot.command()
+@commands.has_role("Dev")
+@commands.has_permissions(administrator=True)
 async def roles(ctx):
     guild = ctx.guild
     await logger.log(f"`{ctx.author.name}` отправил сообщение с ролями.")
