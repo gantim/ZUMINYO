@@ -21,7 +21,7 @@ class ChannelUpdater:
             channel = discord.utils.get(guild.channels, id=self.channel_id)
             if channel and isinstance(channel, discord.VoiceChannel):
                 await channel.edit(name=new_name)
-                await self.logger.log(f"Название канала обновлено на: {new_name}")
+#                await self.logger.log(f"Название канала обновлено на: {new_name}")
 
     async def start(self):
         self.update_channel_name.start()
