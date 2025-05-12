@@ -3,3 +3,4 @@ discord.py
 python-telegram-bot
 python-dotenv
 pytz
+aiogram

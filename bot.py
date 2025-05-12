@@ -1,18 +1,13 @@
-import discord
+import discord, asyncio, os, uvicorn, aiohttp, io
+from aiogram import Bot, Dispatcher, types
 from discord.ext import commands
-import asyncio
 from countuser import ChannelUpdater
 from telegram_handler import start_telegram_bot
-import os
 from dotenv import load_dotenv
-import uvicorn
 from youtube_webhook import app 
 from logger_switch import SwitchableLogger
 from telegram import Update
 from telegram.ext import Application, MessageHandler, filters, ContextTypes
-import aiohttp
-import io
-
 
 load_dotenv()
 
@@ -32,6 +27,12 @@ CHANNEL_USER_ID = int(os.getenv("CHANNEL_USER_ID"))
 logger = SwitchableLogger(bot)
 channel_updater = ChannelUpdater(bot, CHANNEL_USER_ID, logger)
 MESSAGE_ID_FILE = "roles_message.txt"
+
+telegram_bot = Bot(token=os.getenv("TELEGRAM_TOKEN"))
+dp = Dispatcher()
+
+async def start_telegram_bot():
+    await dp.start_polling(telegram_bot)
 
 REACTION_ROLE_MAP = {
     1339932890515116103: "CSGO",
@@ -203,7 +204,7 @@ async def on_raw_reaction_remove(payload):
             await logger.log(f"Роль {role_name} убрана у пользователя {member.name}")
 
 async def main():
-    telegram_task = asyncio.create_task(start_telegram_bot(bot, logger))
+    telegram_task = asyncio.create_task(start_telegram_bot())
     discord_task = asyncio.create_task(bot.start(DISCORD_TOKEN))
     webhook_task = asyncio.create_task(run_webhook())
     
